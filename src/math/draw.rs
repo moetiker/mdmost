@@ -54,7 +54,25 @@ pub(crate) fn to_row(b: &MathBox) -> Result<String, MathError> {
     }
     let mut out = String::new();
     write_flat(b, &mut out, 0);
+    out.drain(..orphan_overlay_len(&out));
     Ok(out)
+}
+
+/// The bytes at the head of a flat row that no character in it can carry.
+///
+/// A zero-width cluster is drawn by composing it onto the cluster before it, so one that
+/// opens a row has nothing of its own to strike and reaches whatever the terminal drew
+/// last -- the prose an inline formula sits in. [`Canvas::write_str`] drops such a mark
+/// and has always said so; a row is the same rule written for a string, which is what
+/// keeps the two walks agreeing on a box `boxes::row` can build and `\not{}` does build:
+/// a negation of nothing.
+fn orphan_overlay_len(row: &str) -> usize {
+    row.char_indices()
+        .find(|&(_, c)| {
+            let mut buf = [0u8; 4];
+            crate::text::display_width(c.encode_utf8(&mut buf)) != 0
+        })
+        .map_or(row.len(), |(at, _)| at)
 }
 
 /// Appends a zero-height box's cells to `out`.
@@ -1008,12 +1026,14 @@ mod tests {
                 "a combining mark on a double-width base",
                 row(vec![text("\u{65e5}"), text("\u{338}")]),
             ),
-            // NOT in this list, and deliberately: a row whose FIRST part is zero-width,
-            // which `\not{}` builds. The two walks disagree there -- the canvas drops a
-            // mark that opens a write with blank to its left, per `Canvas::write_str`'s
-            // contract, while the flat walk keeps it and the terminal hangs it on whatever
-            // precedes. Adding the case turns this test red. It is recorded in
-            // `docs/maintainer-notes.md` and is an owner's call, not a test to write.
+            // A row whose FIRST part is zero-width, which `\not{}` builds: a negation of
+            // nothing. The overlay has no character to strike, so both walks must drop it
+            // -- `Canvas::write_str`'s contract, which the canvas walk has always kept and
+            // the flat walk did not until this case existed.
+            (
+                "a combining mark with nothing before it in the row",
+                row(vec![text("\u{338}"), text("=")]),
+            ),
         ];
 
         for (what, b) in cases {

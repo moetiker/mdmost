@@ -4195,6 +4195,25 @@ fn the_macro_preamble_spends_the_byte_cap_and_the_caption_says_so() {
 }
 
 #[test]
+fn a_negation_of_nothing_leaves_no_overlay_on_the_prose_before_it() {
+    // `\not{}` is a negation of nothing: `Visual::Negation` over an empty operand. The
+    // overlay it carries has no character to strike, and a combining mark with no base
+    // reaches whatever the terminal drew last -- here the space before the formula, and in
+    // a narrower measure the prose itself. `Canvas::write_str` has always said such a mark
+    // is dropped; this is the inline walk saying it too.
+    let doc = Doc::parse("see $\\not{}x$ here\n");
+    let out =
+        render_document(&doc, 40, None, &Theme::default(), &RenderOptions::default()).plain_text();
+    assert!(
+        !out.contains('\u{338}'),
+        "the overlay has nothing to strike and must be dropped: {out:?}"
+    );
+    assert!(
+        out.contains("see x here"),
+        "the formula itself still draws: {out:?}"
+    );
+}
+#[test]
 fn a_macro_used_before_its_definition_is_not_found() {
     // Design spec §16.2: one pass, document order, and this direction is the rule rather
     // than a limitation to be fixed by a second pass.

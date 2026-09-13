@@ -79,6 +79,11 @@ what moved. The entries are a record, not a compatibility promise.
 
 ### Fixed
 
+- A negation of nothing no longer strikes the text in front of it. `\not{}` carries a
+  combining overlay with no character to compose onto, and an inline formula opening with
+  one reached the prose before it — `see $\not{}x$ here` drew the stroke on the space.
+  Display math already dropped it, so the same formula rendered two ways.
+
 ## 0.3.1 - 2026-09-11
 
 ### New

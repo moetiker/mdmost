@@ -651,25 +651,16 @@ and everything needed to build a preamble is `pub(crate)` — `render::macros`
 or moving the inventory test inside the crate. Both are design decisions; scheduled for
 stage 3, where the corpus is reshaped for grids anyway.
 
-**The two walks disagree on a row that opens with a zero-width box, and only `\not{}`
-builds one.** `Visual::Negation` builds `row([operand, U+0338])`, so the mark is second and
-the walks agree — unless the operand is itself empty, which `\not{}` and `\not{{}}` are.
-Then the row opens with a zero-width part, and the two renderings part company:
+**A row that opens with a zero-width box drops it, in both walks.** `Visual::Negation`
+builds `row([operand, U+0338])`, so the overlay is second and has its character to strike
+— unless the operand is itself empty, which `\not{}` and `\not{{}}` are. Then the row
+opens with a zero-width part, and a combining mark that opens a write has no base: the
+terminal composes it onto whatever it drew last, which for an inline formula is the prose
+in front of it. `see $\not{}x$ here` used to draw the overlay on the space before `x`.
 
-| source | what the reader gets |
-|---|---|
-| `see $\not{}x$ here` | `see ̸x here` — the mark is kept and strikes the space before it |
-| `$$\not{}x$$` | `x` — the mark is dropped |
-| `see $a\not{}b$ here` | `a̸b` — agrees, the mark has `a` to strike |
-| `$$a\not{}b$$` | `a̸b` — agrees |
-
-The canvas walk is the one obeying `Canvas::write_str`'s documented contract: a mark that
-opens a write with blank to its left has nothing to strike and is dropped. The flat walk
-concatenates the row into one string and lets the terminal compose it, so the mark reaches
-the preceding cell — a space, or in inline math the prose before the formula.
-
-`the_flat_walk_and_the_canvas_walk_render_the_same_cells` does **not** carry this case; a
-comment there says why. Adding it turns the test red. Which walk should change is a
-placement question — drop the mark in the flat walk too, or let the canvas keep it — and
-neither is a defect in the sense the ONE ENGINE guard was built to catch, since the input is
-a negation of nothing. Recorded rather than fixed.
+`Canvas::write_str` has always documented the rule — a mark with blank to its left is
+dropped — and the canvas walk kept it while the flat walk did not, so the same box tree
+rendered two ways. `draw::orphan_overlay_len` is that rule written for a string, applied
+in `to_row`, and `the_flat_walk_and_the_canvas_walk_render_the_same_cells` now carries
+the case. A mark
+anywhere else in a row is untouched: it has a cluster before it and composes onto that.
