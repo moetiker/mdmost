@@ -303,7 +303,7 @@ each side plus the title bar. The bar colours are keyed to the dark theme in
 fixed — a title bar that changed with the theme would read as a second window opening.
 
 **The font is Smalti, and it constrains the sizes.** `font = "smalti"` (ansidrama
-0.5.0 and later) is a bundled 8×16 pixel font drawn with no anti-aliasing, which is what
+0.5.1 and later; 0.5.0 introduced it) is a bundled 8×16 pixel font drawn with no anti-aliasing, which is what
 a pager wants: table rules, delimiters, diagram boxes and the scrollbar land on whole
 pixels instead of being softened into grey. It halved the WebP — 1.52 MiB to 0.79 MiB at
 a *larger* frame — because there are far fewer distinct colours to compress.
@@ -328,6 +328,15 @@ same keys the script sends, then `capture-pane -p -t probe.1 | grep -n copy`. Th
 sits at `pane_left = 51`, so its row number is the script's `y` directly and the `x`
 values needed no change: 93 and 94 still land inside a `[copy]` that spans pane columns
 40-45 and 41-46.
+
+**Record with 0.5.1 or later, for one line.** 0.5.1 paints the whole of
+U+2500..U+257F rather than letting the heavy family fall through to the font, and the
+only character in this tour it reaches is the `━` rule under the H1 banner. The
+difference is exactly 736 pixels — the rule's two rows — and it is worth having: under
+0.5.0 they carried three colours (`#60A6E7`, `#5FA4E5` and a washed-out `#44729F`) from
+anti-aliasing a glyph that does not reach the cell edges, and under 0.5.1 all 736 are a
+flat `#63ACF0`. Every other pixel of the frame is identical, because the rest of what
+mdmost draws is the light family, which 0.5.0 already painted.
 
 **Italic is rendered from ansidrama 0.5.0 on, where earlier versions discarded it.** The
 tour has exactly one emphasis (`*controls*` in `demo/tour.md`), so the change is small
