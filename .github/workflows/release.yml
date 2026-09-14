@@ -353,7 +353,11 @@ jobs:
       HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
     steps:
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@master
+        # `@main`, not `@master`: Homebrew renamed the default branch of
+        # Homebrew/actions, and the old ref stopped resolving at all -- both bottle legs
+        # of the v0.3.2 release failed in "Prepare all required actions", before a step
+        # ran. Their tags are dated rather than semver, so a branch is what tracks them.
+        uses: Homebrew/actions/setup-homebrew@main
 
       - name: Tap and trust
         # Homebrew 6.0 stopped loading formulae from third-party taps until they are
@@ -415,7 +419,7 @@ jobs:
           shopt -s nullglob
           jsons=(bottles/*.bottle.json)
           if [ ${#jsons[@]} -eq 0 ]; then
-            echo "::warning::no bottles were built; the formula keeps an empty bottle block"
+            echo "::notice::no bottles were built; the bottle block will be emptied"
             exit 0
           fi
           for json in "${jsons[@]}"; do
@@ -436,23 +440,28 @@ jobs:
         run: |
           shopt -s nullglob
           jsons=(bottles/*.bottle.json)
-          # Not `[ ... ] && exit 0`: the steps run under `bash -e`, where a false test as
-          # the head of an AND-list fails the step.
-          if [ ${#jsons[@]} -eq 0 ]; then
-            echo "no bottles to write"
-            exit 0
-          fi
           {
             echo "  # BOTTLE-START"
-            echo "  bottle do"
-            echo "    root_url \"https://github.com/oetiker/mdmost/releases/download/${{ needs.version.outputs.tag }}\""
-            for json in "${jsons[@]}"; do
-              # `cellar` sits on the bottle, and `brew bottle` copies it onto each tag;
-              # read the tag's own value first and fall back to the bottle's.
-              jq -r '.[].bottle as $b | $b.tags | to_entries[]
-                     | "    sha256 cellar: :\(.value.cellar // $b.cellar), \(.key): \"\(.value.sha256)\""' "$json"
-            done
-            echo "  end"
+            # No bottles means the block must be EMPTIED, never left alone. The formula
+            # arrives here carrying the PREVIOUS release's block, because the `homebrew`
+            # job copies the file forward and this step is what replaces it -- so leaving
+            # it alone publishes a `root_url` pointing at the previous tag under this
+            # release's version, and Homebrew asks for a file that was never built. That
+            # is what v0.3.2 shipped: `mdmost-0.3.2.arm64_sonoma.bottle.tar.gz` under
+            # `.../download/v0.3.1`, a 404 on every `brew install`. An empty block only
+            # costs the Command Line Tools check a bottle exists to avoid; a stale one
+            # breaks the install outright.
+            if [ ${#jsons[@]} -gt 0 ]; then
+              echo "  bottle do"
+              echo "    root_url \"https://github.com/oetiker/mdmost/releases/download/${{ needs.version.outputs.tag }}\""
+              for json in "${jsons[@]}"; do
+                # `cellar` sits on the bottle, and `brew bottle` copies it onto each tag;
+                # read the tag's own value first and fall back to the bottle's.
+                jq -r '.[].bottle as $b | $b.tags | to_entries[]
+                       | "    sha256 cellar: :\(.value.cellar // $b.cellar), \(.key): \"\(.value.sha256)\""' "$json"
+              done
+              echo "  end"
+            fi
             echo "  # BOTTLE-END"
           } > bottle-block.txt
           cat bottle-block.txt
@@ -487,3 +496,21 @@ jobs:
           git add Formula/mdmost.rb
           git commit -m "Homebrew bottles for ${{ needs.version.outputs.tag }}"
           git push origin main
+
+      - name: Fail if no bottles were built
+        # Last on purpose, so the emptied block is committed before this fails: a formula
+        # with no bottle still installs, and leaving it advertising one that does not
+        # exist is the worse outcome. But the release is not healthy, and a green Release
+        # run has said otherwise twice now -- v0.1.2 shipped with an empty bottle block
+        # and v0.3.2 with a stale one, because this job exits 0 whatever it finds. The
+        # bottle legs themselves can fail without failing the run (`continue-on-error` on
+        # the optional one, and `!cancelled()` here), which is deliberate -- one
+        # architecture is worth publishing alone. Zero is not.
+        run: |
+          shopt -s nullglob
+          jsons=(bottles/*.bottle.json)
+          if [ ${#jsons[@]} -eq 0 ]; then
+            echo "::error::no bottles were built; the formula was published without one"
+            exit 1
+          fi
+          echo "bottle json files: ${#jsons[@]}"
