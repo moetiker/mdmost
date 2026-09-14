@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### New
+
+### Changed
+
+### Fixed
+
+## 0.3.2 - 2026-09-14
+
 ### Breaking
 
 0.3.0 wrote these entries as API breaks a `cargo publish` consumer of the library crate
