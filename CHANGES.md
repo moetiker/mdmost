@@ -6,6 +6,14 @@
 
 ### Changed
 
+### Fixed
+
+## 0.3.3 - 2026-09-14
+
+### New
+
+### Changed
+
 - The demo tour opens with a display formula, so the README's first screen shows what
   stage 2 added: `less` prints `$$\frac{-b \pm \sqrt{b^2-4ac}}{2a}$$` and mdmost draws
   it, side by side in the same frame.
