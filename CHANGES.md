@@ -6,6 +6,11 @@
 
 ### Changed
 
+- The README's demo is re-recorded against ansidrama 0.5.0 in its bundled Smalti pixel
+  font. Box art, table rules and the scrollbar are no longer anti-aliased into grey, and
+  the WebP is half the bytes at a larger frame — 828×533 and 0.79 MiB, against 728×501
+  and 1.52 MiB.
+
 ### Fixed
 
 ## 0.3.2 - 2026-09-14

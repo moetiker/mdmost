@@ -297,10 +297,28 @@ in the right, on `demo/tour.md`. Everything it depends on is under `demo/` —
 script itself). It needs `tmux` >= 3.4, `less` and `nano` on the host, and nothing else.
 
 The frame is dressed as a macOS window by ansidrama's own `[chrome]` table, so the
-output is larger than the cell grid: 728×501 rather than 700×450, from `padding = 14` on
+output is larger than the cell grid: 828×533 rather than 800×480, from `padding = 14` on
 each side plus the title bar. The bar colours are keyed to the dark theme in
 `src/theme/builtin.rs` rather than left at ansidrama's greys, and they are deliberately
 fixed — a title bar that changed with the theme would read as a second window opening.
+
+**The font is Smalti, and it constrains the sizes.** `font = "smalti"` (ansidrama
+0.5.0 and later) is a bundled 8×16 pixel font drawn with no anti-aliasing, which is what
+a pager wants: table rules, delimiters, diagram boxes and the scrollbar land on whole
+pixels instead of being softened into grey. It halved the WebP — 1.52 MiB to 0.79 MiB at
+a *larger* frame — because there are far fewer distinct colours to compress.
+
+The cost is that it is exact only at whole multiples of 16px, and ansidrama refuses any
+other size rather than rendering it blurred. **All three sizes must be multiples of 16,
+including `card_subtitle_px`, whose default of 22 is not** — a config that simply omits
+it is rejected, which is the trap here. That also removes the fine control the outline
+font gave the title card: 16 and 32 are the only subtitle sizes, 32 is the readable one,
+and a 48px title beside it is only half again its height rather than the near-double the
+old 40/22 pair gave. `card_font_px = 64` is what restores that proportion.
+
+**Italic is rendered from ansidrama 0.5.0 on, where earlier versions discarded it.** The
+tour has exactly one emphasis (`*controls*` in `demo/tour.md`), so the change is small
+here — but it is a real difference from every recording before 2026-09-14.
 
 Six things in there are load-bearing and easy to break:
 
