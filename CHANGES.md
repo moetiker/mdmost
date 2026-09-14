@@ -6,6 +6,14 @@
 
 ### Changed
 
+- The demo tour opens with a display formula, so the README's first screen shows what
+  stage 2 added: `less` prints `$$\frac{-b \pm \sqrt{b^2-4ac}}{2a}$$` and mdmost draws
+  it, side by side in the same frame.
+- The README's demo is re-recorded against ansidrama 0.5.1 in its bundled Smalti pixel
+  font. Box art, table rules and the scrollbar are no longer anti-aliased into grey, and
+  the WebP is half the bytes at a larger frame — 828×533 and 0.79 MiB, against 728×501
+  and 1.52 MiB.
+
 ### Fixed
 
 ## 0.3.2 - 2026-09-14

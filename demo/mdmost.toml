@@ -9,10 +9,25 @@
 cols = 100
 rows = 30
 
-# The frame is 100x30 cells, so the font is what decides the pixel size of a README
-# hero image. 15px keeps the two panes legible at 1:1 without a 1200px-wide picture.
-font_px = 15
-card_font_px = 40
+# Smalti is ansidrama's bundled 8x16 pixel font, drawn with no anti-aliasing, which is
+# what a pager's box art wants: every rule, delimiter and diagram stroke lands on whole
+# pixels instead of being softened into grey. It is exact only at whole multiples of
+# 16px and ansidrama refuses anything else, so the three sizes below are not free
+# choices the way they were under an outline font.
+font = "smalti"
+
+# The frame is 100x30 cells, so the font is what decides the pixel size of a README hero
+# image: 16px keeps the two panes legible at 1:1 and the picture 828px wide.
+#
+# The card sizes are chosen together, because 16 and 32 are the only subtitle sizes the
+# grid offers and 32 is the readable one. Against a 48px title that subtitle competes
+# with it -- two thirds its height, where the outline font ran 22 against 40, a little
+# over half. 64 restores that proportion and lets "mdmost" be the thing the eye lands
+# on. The subtitle must be set explicitly either way: ansidrama's default of 22px is not
+# a multiple of 16 and is rejected outright.
+font_px = 16
+card_font_px = 64
+card_subtitle_px = 32
 max_fps = 30
 type_cs = 5
 move_cs = 2
@@ -177,7 +192,7 @@ keys = ["Space"]
 hold_cs = 140
 
 [[scene]]
-click = { x = 93, y = 2 }
+click = { x = 93, y = 13 }
 hold_cs = 220
 
 [[scene]]
@@ -223,7 +238,7 @@ keys = ["Space", "Space", "Space"]
 hold_cs = 140
 
 [[scene]]
-click = { x = 94, y = 1 }
+click = { x = 94, y = 12 }
 hold_cs = 220
 
 [[scene]]

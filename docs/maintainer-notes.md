@@ -297,10 +297,50 @@ in the right, on `demo/tour.md`. Everything it depends on is under `demo/` —
 script itself). It needs `tmux` >= 3.4, `less` and `nano` on the host, and nothing else.
 
 The frame is dressed as a macOS window by ansidrama's own `[chrome]` table, so the
-output is larger than the cell grid: 728×501 rather than 700×450, from `padding = 14` on
+output is larger than the cell grid: 828×533 rather than 800×480, from `padding = 14` on
 each side plus the title bar. The bar colours are keyed to the dark theme in
 `src/theme/builtin.rs` rather than left at ansidrama's greys, and they are deliberately
 fixed — a title bar that changed with the theme would read as a second window opening.
+
+**The font is Smalti, and it constrains the sizes.** `font = "smalti"` (ansidrama
+0.5.1 and later; 0.5.0 introduced it) is a bundled 8×16 pixel font drawn with no anti-aliasing, which is what
+a pager wants: table rules, delimiters, diagram boxes and the scrollbar land on whole
+pixels instead of being softened into grey. It halved the WebP — 1.52 MiB to 0.79 MiB at
+a *larger* frame — because there are far fewer distinct colours to compress.
+
+The cost is that it is exact only at whole multiples of 16px, and ansidrama refuses any
+other size rather than rendering it blurred. **All three sizes must be multiples of 16,
+including `card_subtitle_px`, whose default of 22 is not** — a config that simply omits
+it is rejected, which is the trap here. That also removes the fine control the outline
+font gave the title card: 16 and 32 are the only subtitle sizes, 32 is the readable one,
+and a 48px title beside it is only half again its height rather than the near-double the
+old 40/22 pair gave. `card_font_px = 64` is what restores that proportion.
+
+**Content added near the top of `demo/tour.md` moves every click below it, and the
+copy buttons are the ones that break.** Adding the opening formula pushed the document
+down eleven rendered rows at 49 columns, so acts 3 and 4 clicked where the `[copy]`
+button used to be and copied nothing. That is the failure the coordinate step exists to
+catch, and this time it was loud rather than silent: the paste act's
+`await = { find = '^Instrument +Reading +Remark', row = 1 }` never matched, because nano
+had nothing to paste. **Re-read the rows from a live pane rather than computing them** —
+`tmux -L probe -f demo/tmux.conf new-session -d -x 100 -y 30 … split-window -h`, send the
+same keys the script sends, then `capture-pane -p -t probe.1 | grep -n copy`. The pane
+sits at `pane_left = 51`, so its row number is the script's `y` directly and the `x`
+values needed no change: 93 and 94 still land inside a `[copy]` that spans pane columns
+40-45 and 41-46.
+
+**Record with 0.5.1 or later, for one line.** 0.5.1 paints the whole of
+U+2500..U+257F rather than letting the heavy family fall through to the font, and the
+only character in this tour it reaches is the `━` rule under the H1 banner. The
+difference is exactly 736 pixels — the rule's two rows — and it is worth having: under
+0.5.0 they carried three colours (`#60A6E7`, `#5FA4E5` and a washed-out `#44729F`) from
+anti-aliasing a glyph that does not reach the cell edges, and under 0.5.1 all 736 are a
+flat `#63ACF0`. Every other pixel of the frame is identical, because the rest of what
+mdmost draws is the light family, which 0.5.0 already painted.
+
+**Italic is rendered from ansidrama 0.5.0 on, where earlier versions discarded it.** The
+tour has exactly one emphasis (`*controls*` in `demo/tour.md`), so the change is small
+here — but it is a real difference from every recording before 2026-09-14.
 
 Six things in there are load-bearing and easy to break:
 
