@@ -316,6 +316,19 @@ font gave the title card: 16 and 32 are the only subtitle sizes, 32 is the reada
 and a 48px title beside it is only half again its height rather than the near-double the
 old 40/22 pair gave. `card_font_px = 64` is what restores that proportion.
 
+**Content added near the top of `demo/tour.md` moves every click below it, and the
+copy buttons are the ones that break.** Adding the opening formula pushed the document
+down eleven rendered rows at 49 columns, so acts 3 and 4 clicked where the `[copy]`
+button used to be and copied nothing. That is the failure the coordinate step exists to
+catch, and this time it was loud rather than silent: the paste act's
+`await = { find = '^Instrument +Reading +Remark', row = 1 }` never matched, because nano
+had nothing to paste. **Re-read the rows from a live pane rather than computing them** —
+`tmux -L probe -f demo/tmux.conf new-session -d -x 100 -y 30 … split-window -h`, send the
+same keys the script sends, then `capture-pane -p -t probe.1 | grep -n copy`. The pane
+sits at `pane_left = 51`, so its row number is the script's `y` directly and the `x`
+values needed no change: 93 and 94 still land inside a `[copy]` that spans pane columns
+40-45 and 41-46.
+
 **Italic is rendered from ansidrama 0.5.0 on, where earlier versions discarded it.** The
 tour has exactly one emphasis (`*controls*` in `demo/tour.md`), so the change is small
 here — but it is a real difference from every recording before 2026-09-14.

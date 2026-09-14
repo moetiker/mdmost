@@ -192,7 +192,7 @@ keys = ["Space"]
 hold_cs = 140
 
 [[scene]]
-click = { x = 93, y = 2 }
+click = { x = 93, y = 13 }
 hold_cs = 220
 
 [[scene]]
@@ -238,7 +238,7 @@ keys = ["Space", "Space", "Space"]
 hold_cs = 140
 
 [[scene]]
-click = { x = 94, y = 1 }
+click = { x = 94, y = 12 }
 hold_cs = 220
 
 [[scene]]

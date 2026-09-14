@@ -5,6 +5,11 @@ terminal fold the long lines wherever they happen to run out of room. Every
 paragraph here re-breaks its lines the moment the pane changes width, because
 the drawing is a function of the width and nothing else.
 
+Mathematics is the sharpest case. A formula is not a line of text: it is a
+shape built out of cells, centred in whatever measure the prose is using.
+
+$$\frac{-b \pm \sqrt{b^2-4ac}}{2a}$$
+
 Watch the left pane while the divider moves. `less` is doing its honest best
 with a file it was never told anything about, so it wraps words mid-glyph and
 prints table pipes as pipes.
