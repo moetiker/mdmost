@@ -371,9 +371,15 @@ overline, a handful of box-drawing characters most of which are already listed.
 
 The test changes in one way: the subtraction becomes "characters produced from a math
 node", not only "characters present verbatim in the source". The manual then claims
-*blocks* for math — Greek and Coptic, Mathematical Operators, Supplemental
-Mathematical Operators, Letterlike Symbols, superscripts and subscripts — and
-codepoints for everything else, as it does now.
+*blocks* for the structure math draws and for the delimiter pieces it reaches for —
+Mathematical Operators, Misc Mathematical Symbols-A and -B, Arrows, Miscellaneous
+Technical, Superscripts and Subscripts — and codepoints for everything else, as it does
+now.
+
+It claims **no** block for the symbols themselves. A font that cannot draw `α` or `ℝ`
+fails the document, not this program, which is the principle two paragraphs above applied
+to the terminal-setup list: `\alpha` and `\mathbb{R}` are the author's characters. The
+manual says so where it documents the font commands.
 
 ## 14. Testing
 
